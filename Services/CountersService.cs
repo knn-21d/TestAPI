@@ -43,10 +43,7 @@ namespace TestAPI.Services
         public async Task<Counter> ChangeKey(int id, int key)
         {
             var counter = await _countersDataProvider.GetCounter(id);
-            if (counter is null)
-            {
-                throw new HttpResponseException(HttpStatusCode.NoContent);
-            }
+            if (counter is null) throw new HttpResponseException(HttpStatusCode.NoContent);
             return await _countersDataProvider.ChangeKey(counter, key);
         }
 

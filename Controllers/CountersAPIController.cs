@@ -81,7 +81,7 @@ namespace TestAPI.Controllers
         {
             try
             {
-                return Ok(await _service.ChangeKey(id, value));
+                return Ok(await _service.ChangeValue(id, value));
             }
             catch (System.Web.Http.HttpResponseException ex)
             {
