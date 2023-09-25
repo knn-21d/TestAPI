@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using TestAPI.Data;
+using TestAPI.Services;
 
 namespace TestAPI
 {
@@ -13,6 +16,11 @@ namespace TestAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddScoped<CountersService>();
+            builder.Services.AddScoped<CountersDataProvider>();
+            builder.Services.AddHostedService<BackgroundTaskService>();
+            builder.Services.AddMemoryCache();
 
             var app = builder.Build();
 
