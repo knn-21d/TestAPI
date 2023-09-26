@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using TestAPI.Data;
+﻿using TestAPI.Data;
 using TestAPI.Models;
 
 namespace TestAPI.Services
@@ -10,9 +9,9 @@ namespace TestAPI.Services
         private readonly CountersDataProvider _countersDataProvider;
         private Counter? _counter;
 
-        public BackgroundTaskService(IMemoryCache cache)
+        public BackgroundTaskService(CountersDataProvider countersDataProvider)
         {
-            _countersDataProvider = new(cache);
+            _countersDataProvider = countersDataProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

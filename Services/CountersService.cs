@@ -2,7 +2,6 @@
 using System.Net;
 using TestAPI.Data;
 using TestAPI.Models;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace TestAPI.Services
 {

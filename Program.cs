@@ -17,8 +17,8 @@ namespace TestAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddScoped<CountersService>();
-            builder.Services.AddScoped<CountersDataProvider>();
+            builder.Services.AddTransient<CountersService>();
+            builder.Services.AddTransient<CountersDataProvider>();
             builder.Services.AddHostedService<BackgroundTaskService>();
             builder.Services.AddMemoryCache();
 
