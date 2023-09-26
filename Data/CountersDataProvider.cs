@@ -9,6 +9,7 @@ namespace TestAPI.Data
     {
         private readonly ApplicationContext _context;
         private readonly IMemoryCache _cache;
+        private readonly CountersCacheHelper _cacheHelper;
 
         public CountersDataProvider(IMemoryCache memoryCache)
         {
@@ -17,6 +18,7 @@ namespace TestAPI.Data
             _context = new(optionsBuilder.Options);
             _context.Database.EnsureCreatedAsync();
             _cache = memoryCache;
+            _cacheHelper = new(_cache);
         }
 
         public async Task<IEnumerable<Counter>> GetCounters()
@@ -46,9 +48,7 @@ namespace TestAPI.Data
             Counter counter = new Counter { Key = key, Value = value };
             await _context.Counters.AddAsync(counter);
             await _context.SaveChangesAsync();
-            _cache.Remove("Counters");
-            _cache.Remove("CountersCount");
-            _cache.Remove("CountersCountByKeyAndValuesMoreThanOne");
+            _cacheHelper.ClearOnAdd();
             return counter;
         }
 
@@ -63,14 +63,14 @@ namespace TestAPI.Data
             return (int)count;
         }
 
-        public async Task<IEnumerable<object>> GetCountersCountByKeyAndValuesMoreThanOne()
+        public async Task<IEnumerable<CountersDTO>> GetCountersCountByKeyAndValuesMoreThanOne()
         {
-            _cache.TryGetValue("CountersCountByKeyAndValuesMoreThanOne", out IEnumerable<object>? result);
+            _cache.TryGetValue("CountersCountByKeyAndValuesMoreThanOne", out IEnumerable<CountersDTO>? result);
             if (result is null)
             {
                 result = await _context.Counters
                     .GroupBy(c => c.Key)
-                    .Select(c => new { Key = c.Key, Count = c.Count(), CountMoreThen = c.Count(p => p.Value > 1) })
+                    .Select(c => new CountersDTO { Key = c.Key, Count = c.Count(), CountMoreThen = c.Count(p => p.Value > 1) })
                     .ToListAsync();
                 _cache.Set("CountersCountByKeyAndValuesMoreThanOne", result);
             }
@@ -81,9 +81,7 @@ namespace TestAPI.Data
         {
             counter.Key = key;
             await _context.SaveChangesAsync();
-            _cache.Remove("Counters");
-            _cache.Remove("CountersCountByKeyAndValuesMoreThanOne");
-            _cache.Remove(counter.Id);
+            _cacheHelper.ClearOnPatch(counter.Id);
             return counter;
         }
 
@@ -91,9 +89,7 @@ namespace TestAPI.Data
         {
             counter.Value = value;
             await _context.SaveChangesAsync();
-            _cache.Remove("Counters");
-            _cache.Remove("CountersCountByKeyAndValuesMoreThanOne");
-            _cache.Remove(counter.Id);
+            _cacheHelper.ClearOnPatch(counter.Id);
             return counter;
         }
     }
