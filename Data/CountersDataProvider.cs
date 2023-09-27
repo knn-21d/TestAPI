@@ -11,11 +11,11 @@ namespace TestAPI.Data
         private readonly IMemoryCache _cache;
         private readonly CountersCacheHelper _cacheHelper;
 
-        public CountersDataProvider(IMemoryCache memoryCache)
+        public CountersDataProvider(IMemoryCache memoryCache, ApplicationContext context)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationContext>()
                 .UseNpgsql("Host=localhost;Port=5432;Database=CountersDB;Username=postgres;Password=testpass");
-            _context = new(optionsBuilder.Options);
+            _context = context;
             _context.Database.EnsureCreatedAsync();
             _cache = memoryCache;
             _cacheHelper = new(_cache);
@@ -37,7 +37,7 @@ namespace TestAPI.Data
             _cache.TryGetValue(id, out Counter? counter);
             if (counter is null)
             {
-                counter = await _context.Counters.FirstOrDefaultAsync(x => x.Id == id);
+                counter = await _context.Counters.FirstOrDefaultAsync(c => c.Id == id);
                 _cache.Set(id, counter);
             }
             return counter;
@@ -63,6 +63,7 @@ namespace TestAPI.Data
             return (int)count;
         }
 
+        // запрос, возвращающий количество записей по столбцу Key и счётчик значений больше единицы
         public async Task<IEnumerable<CountersDTO>> GetCountersCountByKeyAndValuesMoreThanOne()
         {
             _cache.TryGetValue("CountersCountByKeyAndValuesMoreThanOne", out IEnumerable<CountersDTO>? result);
@@ -70,7 +71,7 @@ namespace TestAPI.Data
             {
                 result = await _context.Counters
                     .GroupBy(c => c.Key)
-                    .Select(c => new CountersDTO { Key = c.Key, Count = c.Count(), CountMoreThen = c.Count(p => p.Value > 1) })
+                    .Select(c => new CountersDTO { Key = c.Key, Count = c.Count(), CountMoreThen = c.Count(c => c.Value > 1) })
                     .ToListAsync();
                 _cache.Set("CountersCountByKeyAndValuesMoreThanOne", result);
             }
